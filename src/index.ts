@@ -2,7 +2,10 @@ import "dotenv/config";
 import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import session from "cookie-session";
-import { config } from "./src/config/app.config";
+import { config } from "./config/app.config";
+import { connectDatabase } from "./config/db.config";
+import { HTTPSTATUS } from "./config/http.config";
+import { errorHandler } from "./middleware/errorHandler.middleware";
 
 type defaultRouteType = {
   req: Request;
@@ -12,7 +15,6 @@ type defaultRouteType = {
 
 const app = express();
 const BASE_PATH = config.BASE_PATH;
-
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
@@ -33,8 +35,9 @@ app.use(
   })
 );
 
+app.use(errorHandler)
 app.get("/", ({ req, res, next }: defaultRouteType) => {
-  res.status(200).json({
+  res.status(HTTPSTATUS.OK).json({
     message: "Welcome to Jira Clone API",
   });
 });
@@ -43,4 +46,5 @@ app.listen(config.PORT, async () => {
   console.log(
     `Server is running at PORT ${config.PORT} in the ${config.NODE_ENV} environment`
   );
+  await connectDatabase();
 });
